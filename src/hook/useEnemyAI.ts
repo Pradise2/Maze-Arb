@@ -1,6 +1,6 @@
-
 // hooks/useEnemyAI.ts - Enemy AI Behavior Hook
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { Position, GameState, CELL_TYPES } from '../types/game.types';
 
 interface EnemyAI {
   enemies: Position[];
@@ -146,9 +146,107 @@ export const useEnemyAI = (
     moveHistoryRef.current.clear();
   }, []);
 
+  // Advanced AI behaviors
+  const shouldPatrol = useCallback((enemyPos: Position): boolean => {
+    // Enemies patrol when player is far away
+    const distanceToPlayer = getDistance(enemyPos, playerPos);
+    return distanceToPlayer > 5; // Patrol when player is more than 5 cells away
+  }, [getDistance, playerPos]);
+
+  const findPatrolMove = useCallback((enemyPos: Position): Position | null => {
+    const directions = [
+      { x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }
+    ];
+    
+    // Prefer moves that explore new areas or continue in same direction
+    const validMoves = directions
+      .map(dir => ({ x: enemyPos.x + dir.x, y: enemyPos.y + dir.y }))
+      .filter(pos => isValidEnemyMove(pos.x, pos.y));
+    
+    if (validMoves.length === 0) return null;
+    
+    // Simple patrol logic - try to move in straight lines when possible
+    const enemyKey = `${enemyPos.x},${enemyPos.y}`;
+    const history = moveHistoryRef.current.get(enemyKey) || [];
+    
+    if (history.length > 0) {
+      const lastPos = history[history.length - 1];
+      const lastDirection = {
+        x: enemyPos.x - lastPos.x,
+        y: enemyPos.y - lastPos.y
+      };
+      
+      // Try to continue in same direction
+      const continueStraight = {
+        x: enemyPos.x + lastDirection.x,
+        y: enemyPos.y + lastDirection.y
+      };
+      
+      if (isValidEnemyMove(continueStraight.x, continueStraight.y)) {
+        return continueStraight;
+      }
+    }
+    
+    // Otherwise pick random valid move
+    return validMoves[Math.floor(Math.random() * validMoves.length)];
+  }, [isValidEnemyMove]);
+
+  const getSmartMove = useCallback((enemyPos: Position): Position | null => {
+    const distanceToPlayer = getDistance(enemyPos, playerPos);
+    
+    // Different behaviors based on distance and difficulty
+    if (distanceToPlayer <= 2 && difficulty === 'hard') {
+      // Close range - always chase on hard difficulty
+      return findPathToPlayer(enemyPos);
+    } else if (distanceToPlayer <= 4 && Math.random() < chaseChance) {
+      // Medium range - chance to chase
+      return findPathToPlayer(enemyPos);
+    } else if (shouldPatrol(enemyPos)) {
+      // Far away - patrol behavior
+      return findPatrolMove(enemyPos);
+    } else {
+      // Default random movement
+      return getRandomMove(enemyPos);
+    }
+  }, [difficulty, getDistance, playerPos, chaseChance, findPathToPlayer, shouldPatrol, findPatrolMove, getRandomMove]);
+
+  // Enhanced update function with smarter AI
+  const updateEnemiesSmarter = useCallback(() => {
+    if (gameState !== 'playing' || enemies.length === 0) return;
+
+    setEnemies(prevEnemies => 
+      prevEnemies.map(enemy => {
+        const newPos = getSmartMove(enemy);
+        
+        if (newPos) {
+          updateEnemyHistory(enemy, newPos);
+          return newPos;
+        }
+
+        return enemy;
+      })
+    );
+  }, [gameState, enemies.length, getSmartMove, updateEnemyHistory]);
+
+  // Use smarter AI for normal and hard difficulties
+  const finalUpdateEnemies = difficulty === 'easy' ? updateEnemies : updateEnemiesSmarter;
+
+  // Debug logging in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && enemies.length > 0) {
+      console.log('Enemy AI State:', {
+        enemyCount: enemies.length,
+        difficulty,
+        chaseChance,
+        moveInterval: enemyMoveInterval,
+        gameState
+      });
+    }
+  }, [enemies.length, difficulty, chaseChance, enemyMoveInterval, gameState]);
+
   return {
     enemies,
-    updateEnemies,
+    updateEnemies: finalUpdateEnemies,
     setEnemies,
     resetEnemies,
     isPlayerCaught,
