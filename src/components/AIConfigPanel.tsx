@@ -212,4 +212,170 @@ const AIConfigPanel: React.FC<AIConfigPanelProps> = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{getPersonalityIcon(enemy.type)}</span>
-                          <span className="text-white text-sm
+                          <span className="text-white text-sm font-medium">
+                            {enemy.type.charAt(0).toUpperCase() + enemy.type.slice(1)}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-sm font-medium ${getStateColor(enemy.state)}`}>
+                            {enemy.state.toUpperCase()}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            Energy: {enemy.energy}%
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-1">
+                        <div className="w-full bg-gray-700 rounded-full h-1">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 h-1 rounded-full transition-all duration-300"
+                            style={{ width: `${enemy.intelligence}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* AI Insights */}
+            {aiInsights.length > 0 && (
+              <div>
+                <h4 className="text-white font-medium flex items-center gap-2 mb-2">
+                  <Info size={16} />
+                  AI Insights
+                </h4>
+                <div className="bg-gray-800 rounded p-3 space-y-1">
+                  {aiInsights.slice(-3).map((insight, index) => (
+                    <div key={index} className="text-sm text-gray-300">
+                      • {insight}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Advanced Settings */}
+            <div>
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-purple-400 hover:text-purple-300 text-sm"
+              >
+                {showAdvanced ? 'Hide' : 'Show'} Advanced Settings
+              </button>
+              
+              {showAdvanced && (
+                <div className="mt-3 space-y-3 bg-gray-800 rounded p-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      AI Model
+                    </label>
+                    <select
+                      value={config.model}
+                      onChange={(e) => handleConfigChange('model', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+                    >
+                      <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Fast)</option>
+                      <option value="openai/gpt-4">GPT-4 (Smart)</option>
+                      <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Fastest)</option>
+                      <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet (Balanced)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-300">Adaptability</span>
+                      <span className="text-green-400">{config.adaptability}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={config.adaptability}
+                      onChange={(e) => handleConfigChange('adaptability', parseInt(e.target.value))}
+                      className="w-full accent-green-500"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      How quickly enemies adapt to your play style
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-700 rounded p-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertTriangle size={14} className="text-yellow-400" />
+                      <span className="text-yellow-400 text-sm font-medium">Cost Estimate</span>
+                    </div>
+                    <div className="text-white text-sm">
+                      ${config.costPerHour.toFixed(3)}/hour
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Based on current model and settings
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Presets */}
+            <div>
+              <h4 className="text-white font-medium mb-2">Quick Presets</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => onConfigChange({
+                    ...config,
+                    intelligence: 30,
+                    aggressiveness: 40,
+                    cooperation: 20,
+                    adaptability: 25
+                  })}
+                  className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-2 rounded"
+                >
+                  Casual
+                </button>
+                <button
+                  onClick={() => onConfigChange({
+                    ...config,
+                    intelligence: 60,
+                    aggressiveness: 60,
+                    cooperation: 50,
+                    adaptability: 55
+                  })}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-3 py-2 rounded"
+                >
+                  Normal
+                </button>
+                <button
+                  onClick={() => onConfigChange({
+                    ...config,
+                    intelligence: 85,
+                    aggressiveness: 80,
+                    cooperation: 75,
+                    adaptability: 80
+                  })}
+                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded"
+                >
+                  Expert
+                </button>
+                <button
+                  onClick={() => onConfigChange({
+                    ...config,
+                    intelligence: 95,
+                    aggressiveness: 90,
+                    cooperation: 90,
+                    adaptability: 95
+                  })}
+                  className="bg-purple-600 hover:bg-purple-700 text-white text-sm px-3 py-2 rounded"
+                >
+                  AI Master
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AIConfigPanel;
