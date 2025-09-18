@@ -1,8 +1,9 @@
-// src/components/Web3Provider.tsx - Web3 Configuration
+// src/components/Web3Provider.tsx - Web3 Configuration (Fixed)
 import React from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiProvider } from 'wagmi';
-import { arbitrum, mainnet } from 'viem/chains';
+// FIX 1: Import networks from the appkit library for correct typing.
+import { arbitrum, mainnet, type AppKitNetwork } from '@reown/appkit/networks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 
@@ -18,7 +19,8 @@ const metadata = {
 };
 
 // 3. Set the networks
-const networks = [mainnet, arbitrum];
+// FIX 2: Add a type assertion to guarantee the array is not empty.
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, arbitrum];
 
 // 4. Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({

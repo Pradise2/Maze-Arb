@@ -1,6 +1,6 @@
 // src/components/GameAnalyticsPanel.tsx - Debug Panel for Analytics
 import React from 'react';
-import { GameAnalytics } from '../hooks/useGameAnalytics';
+import type { GameAnalytics } from '../hooks/useGameAnalytics';
 
 interface GameAnalyticsPanelProps {
   analytics: GameAnalytics;

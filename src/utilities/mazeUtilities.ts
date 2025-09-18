@@ -1,5 +1,5 @@
 // src/utilities/mazeUtilities.ts - Maze Utility Functions
-import { Position, CELL_TYPES } from '../types/game.types';
+import { type Position, CELL_TYPES } from '../types/game.types';
 import { isInBounds, findCellPositions } from './collision';
 
 /**

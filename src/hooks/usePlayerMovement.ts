@@ -1,6 +1,7 @@
 
 // hooks/usePlayerMovement.ts - Player Movement Logic Hook
 import { useState, useCallback, useRef } from 'react';
+import type { GameState } from '../types/game.types';
 
 interface Position {
   x: number;

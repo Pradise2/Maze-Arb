@@ -1,8 +1,8 @@
 // src/hooks/useGameAnalytics.ts - Game Analytics Hook
 import { useState, useCallback, useRef } from 'react';
-import { GameEvent } from '../types/game.types';
+import type { GameEvent } from '../types/game.types';
 
-interface GameAnalytics {
+export interface GameAnalytics {
   events: GameEvent[];
   addEvent: (event: Omit<GameEvent, 'timestamp'>) => void;
   getSessionStats: () => {

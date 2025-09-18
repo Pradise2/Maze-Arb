@@ -1,6 +1,7 @@
 
 // src/utilities/gameConstant.ts - Game Constants and Levels
-import { Level, Position } from '../types/game.types';
+// src/utilities/gameConstant.ts - Game Constants and Levels
+import type { Level } from '../types/game.types';
 
 export const GAME_CONFIG = {
   CELL_SIZE: 24,

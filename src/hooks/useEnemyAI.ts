@@ -1,6 +1,6 @@
 // hooks/useEnemyAI.ts - Enemy AI Behavior Hook
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Position, GameState, CELL_TYPES } from '../types/game.types';
+import { type Position, type GameState, CELL_TYPES } from '../types/game.types';
 
 interface EnemyAI {
   enemies: Position[];

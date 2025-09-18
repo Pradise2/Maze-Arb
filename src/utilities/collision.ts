@@ -1,5 +1,5 @@
 // src/utilities/collision.ts - Collision Detection Utilities
-import { Position, CELL_TYPES, CollisionResult } from '../types/game.types';
+import { type Position, CELL_TYPES, type CollisionResult } from '../types/game.types';
 
 /**
  * Check if a position is within maze bounds

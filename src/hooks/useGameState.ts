@@ -1,6 +1,6 @@
 // src/hook/useGameState.ts - Game State Management Hook
 import { useState, useCallback, useEffect } from 'react';
-import { GameState, Level } from '../types/game.types';
+import type { GameState, Level } from '../types/game.types';
 
 interface GameStateHook {
   gameState: GameState;

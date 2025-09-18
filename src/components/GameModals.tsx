@@ -1,5 +1,5 @@
 // GameModals.tsx - Game State Modal Components
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Trophy,
   Skull,
@@ -12,7 +12,6 @@ import {
   Clock,
   Target,
   Award,
-  Zap,
   Crown,
   PartyPopper
 } from 'lucide-react';

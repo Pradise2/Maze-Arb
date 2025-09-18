@@ -1,14 +1,14 @@
 // src/components/MazeGame.tsx - Main Game Component
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GameState, Position, GameSettings, CELL_TYPES } from '../types/game.types';
+import type { Position, GameSettings } from '../types/game.types';
+
 import { LEVELS, DEFAULT_SETTINGS } from '../utilities/gameConstant';
-import { isValidPosition, checkEnemyCollision, isCollectible, isExit } from '../utilities/collision';
-import { removeCollectible, countCells, cloneMaze } from '../utilities/mazeUtilities';
-import { useGameState } from '../hook/useGameState';
-import { useGameTimer } from '../hook/useGameTimer';
-import { usePlayerMovement } from '../hook/usePlayerMovement';
-import { useEnemyAI } from '../hook/useEnemyAI';
-import { useSound } from '../hook/useSound';
+import { removeCollectible,  cloneMaze } from '../utilities/mazeUtilities';
+import { useGameState } from '../hooks/useGameState';
+import { useGameTimer } from '../hooks/useGameTimer';
+import { usePlayerMovement } from '../hooks/usePlayerMovement';
+import { useEnemyAI } from '../hooks/useEnemyAI';
+import { useSound } from '../hooks/useSound';
 
 import MainMenu from './MainMenu';
 import MazeRenderer from './MazeRenderer';
@@ -47,7 +47,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     setGameState,
     nextLevel,
     resetLevel,
-    addScore,
+    
     collectItem,
     setTimeLeft,
     initializeLevel,
@@ -67,7 +67,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     handleReachExit,
     gameState
   );
-  const { playerPos, movePlayer, setPlayerPosition, resetPosition } = playerMovement;
+  const { playerPos, movePlayer, setPlayerPosition } = playerMovement;
 
   // Enemy AI
   const enemyAI = useEnemyAI(
@@ -82,7 +82,8 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
   const { playSound } = useSound(settings.soundEnabled);
 
   // Game loop timing
-  const gameLoopRef = useRef<NodeJS.Timeout>();
+  const gameLoopRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
 
   // Initialize level data
   const initializeCurrentLevel = useCallback(() => {

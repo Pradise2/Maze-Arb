@@ -63,8 +63,7 @@ const DirectionButton: React.FC<DirectionButtonProps> = ({
   style = 'modern'
 }) => {
   const [isPressed, setIsPressed] = useState(false);
-  const pressTimeoutRef = useRef<NodeJS.Timeout>();
-
+  const pressTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const getSizeClasses = () => {
     switch (size) {
       case 'small': return 'p-1.5 min-w-[32px] min-h-[32px]';

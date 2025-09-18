@@ -10,10 +10,7 @@ import {
   Target,
   Gamepad2,
   Volume2,
-  VolumeX,
   Palette,
-  Monitor,
-  Smartphone,
   Crown,
   Award,
   Zap

@@ -1,4 +1,4 @@
-  // MazeRenderer.tsx - Maze Visualization Component
+// MazeRenderer.tsx - Maze Visualization Component
 import React, { useMemo } from 'react';
 
 // ==================== INTERFACES ====================
@@ -19,19 +19,6 @@ interface MazeRendererProps {
   onCellClick?: (x: number, y: number) => void;
 }
 
-interface CellProps {
-  type: number;
-  x: number;
-  y: number;
-  cellSize: number;
-  hasPlayer: boolean;
-  hasEnemy: boolean;
-  theme: string;
-  showGrid: boolean;
-  animations: boolean;
-  onClick?: () => void;
-}
-
 // ==================== CONSTANTS ====================
 
 const CELL_TYPES = {
@@ -42,6 +29,23 @@ const CELL_TYPES = {
   COLLECTIBLE: 4,
   ENEMY: 5
 } as const;
+
+// FIX 2: Create a specific type from the constant's values.
+type CellType = typeof CELL_TYPES[keyof typeof CELL_TYPES];
+
+// FIX 2: Update the CellProps interface to use the more specific CellType.
+interface CellProps {
+  type: CellType;
+  x: number;
+  y: number;
+  cellSize: number;
+  hasPlayer: boolean;
+  hasEnemy: boolean;
+  theme: string;
+  showGrid: boolean;
+  animations: boolean;
+  onClick?: () => void;
+}
 
 // Theme configurations
 const THEMES = {
@@ -93,33 +97,7 @@ const CELL_CONTENT = {
   [CELL_TYPES.ENEMY]: '👾'
 } as const;
 
-// Alternative emoji sets
-const EMOJI_SETS = {
-  default: {
-    player: '😊',
-    enemy: '👾',
-    exit: '🚪',
-    collectible: '⭐'
-  },
-  animals: {
-    player: '🐱',
-    enemy: '🐺',
-    exit: '🏠',
-    collectible: '🐟'
-  },
-  space: {
-    player: '🚀',
-    enemy: '👽',
-    exit: '🌟',
-    collectible: '💎'
-  },
-  fantasy: {
-    player: '🧙',
-    enemy: '🐉',
-    exit: '🏰',
-    collectible: '💰'
-  }
-};
+// FIX 1: Removed unused EMOJI_SETS constant.
 
 // ==================== SUB-COMPONENTS ====================
 
@@ -196,7 +174,8 @@ const MazeCell: React.FC<CellProps> = ({
   const getCellContent = (): string => {
     if (hasPlayer) return CELL_CONTENT[CELL_TYPES.PLAYER];
     if (hasEnemy) return CELL_CONTENT[CELL_TYPES.ENEMY];
-    return CELL_CONTENT[type as keyof typeof CELL_CONTENT] || '';
+    // By using CellType, no cast is needed here.
+    return CELL_CONTENT[type] || '';
   };
   
   // Add special effects for certain cell types
@@ -232,6 +211,7 @@ const MazeCell: React.FC<CellProps> = ({
         minHeight: `${cellSize}px`
       }}
       onClick={onClick}
+      // FIX 2: This line no longer causes an error because `type` is now correctly constrained.
       title={`Cell (${x}, ${y}) - Type: ${Object.keys(CELL_TYPES)[Object.values(CELL_TYPES).indexOf(type)]}`}
     >
       {getSpecialEffects()}
@@ -254,7 +234,7 @@ const MazeStats: React.FC<{
   maze: number[][];
   playerPos: Position;
   enemies: Position[];
-}> = ({ maze, playerPos, enemies }) => {
+}> = ({ maze,  enemies }) => {
   const stats = useMemo(() => {
     let walls = 0;
     let paths = 0;
@@ -348,7 +328,8 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
             row.map((cellType, x) => (
               <MazeCell
                 key={`cell-${x}-${y}`}
-                type={cellType}
+                // FIX 2: Add a type assertion to satisfy the updated CellProps interface.
+                type={cellType as CellType}
                 x={x}
                 y={y}
                 cellSize={cellSize}

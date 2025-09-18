@@ -1,6 +1,6 @@
 // hooks/useGameTimer.ts - Game Timer Management Hook (Fixed)
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { GameState } from '../types/game.types';
+import type { GameState } from '../types/game.types';
 
 interface GameTimer {
   timeLeft: number;
@@ -20,8 +20,9 @@ export const useGameTimer = (
 ): GameTimer => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isRunning, setIsRunning] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout>();
-  const startTimeRef = useRef<number>(0);
+  // FIX: Changed the ref type to allow for 'undefined'
+ const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+ const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
 
   const startTimer = useCallback((initialTime: number) => {

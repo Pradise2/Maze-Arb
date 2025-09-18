@@ -1,6 +1,6 @@
 // src/hooks/useGamePersistence.ts - Local Storage for Game Progress
 import { useState, useEffect, useCallback } from 'react';
-import { GameSettings, HighScore, PlayerStats } from '../types/game.types';
+import type { GameSettings, HighScore, PlayerStats } from '../types/game.types';
 import { DEFAULT_SETTINGS } from '../utilities/gameConstant';
 
 interface GamePersistence {
