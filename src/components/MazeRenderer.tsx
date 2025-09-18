@@ -1,4 +1,4 @@
-// MazeRenderer.tsx - Maze Visualization Component
+// MazeRenderer.tsx - Maze Visualization Component (Fixed)
 import React, { useMemo } from 'react';
 
 // ==================== INTERFACES ====================
@@ -22,18 +22,18 @@ interface MazeRendererProps {
 // ==================== CONSTANTS ====================
 
 const CELL_TYPES = {
-  WALL: 1,
   PATH: 0,
+  WALL: 1,
   PLAYER: 2,
   EXIT: 3,
   COLLECTIBLE: 4,
   ENEMY: 5
 } as const;
 
-// FIX 2: Create a specific type from the constant's values.
+// FIX: Define proper CellType
 type CellType = typeof CELL_TYPES[keyof typeof CELL_TYPES];
 
-// FIX 2: Update the CellProps interface to use the more specific CellType.
+// FIX: Update CellProps to use CellType
 interface CellProps {
   type: CellType;
   x: number;
@@ -87,8 +87,8 @@ const THEMES = {
   }
 };
 
-// Cell content mapping
-const CELL_CONTENT = {
+// Cell content mapping - FIX: Use proper Record type
+const CELL_CONTENT: Record<CellType, string> = {
   [CELL_TYPES.WALL]: '',
   [CELL_TYPES.PATH]: '',
   [CELL_TYPES.EXIT]: '🚪',
@@ -96,8 +96,6 @@ const CELL_CONTENT = {
   [CELL_TYPES.PLAYER]: '😊',
   [CELL_TYPES.ENEMY]: '👾'
 } as const;
-
-// FIX 1: Removed unused EMOJI_SETS constant.
 
 // ==================== SUB-COMPONENTS ====================
 
@@ -174,8 +172,12 @@ const MazeCell: React.FC<CellProps> = ({
   const getCellContent = (): string => {
     if (hasPlayer) return CELL_CONTENT[CELL_TYPES.PLAYER];
     if (hasEnemy) return CELL_CONTENT[CELL_TYPES.ENEMY];
-    // By using CellType, no cast is needed here.
     return CELL_CONTENT[type] || '';
+  };
+  
+  // FIX: Helper function to get cell type name for debugging
+  const getCellTypeName = (cellType: CellType): string => {
+    return Object.keys(CELL_TYPES)[Object.values(CELL_TYPES).indexOf(cellType)] || 'UNKNOWN';
   };
   
   // Add special effects for certain cell types
@@ -211,8 +213,7 @@ const MazeCell: React.FC<CellProps> = ({
         minHeight: `${cellSize}px`
       }}
       onClick={onClick}
-      // FIX 2: This line no longer causes an error because `type` is now correctly constrained.
-      title={`Cell (${x}, ${y}) - Type: ${Object.keys(CELL_TYPES)[Object.values(CELL_TYPES).indexOf(type)]}`}
+      title={`Cell (${x}, ${y}) - Type: ${getCellTypeName(type)}`}
     >
       {getSpecialEffects()}
       <span className="relative z-10">
@@ -234,7 +235,7 @@ const MazeStats: React.FC<{
   maze: number[][];
   playerPos: Position;
   enemies: Position[];
-}> = ({ maze,  enemies }) => {
+}> = ({ maze, enemies }) => {
   const stats = useMemo(() => {
     let walls = 0;
     let paths = 0;
@@ -307,6 +308,14 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
   const hasEnemy = (x: number, y: number): boolean =>
     enemies.some(enemy => enemy.x === x && enemy.y === y);
   
+  // FIX: Helper function to safely cast cell type
+  const getCellType = (cellValue: number): CellType => {
+    if (Object.values(CELL_TYPES).includes(cellValue as CellType)) {
+      return cellValue as CellType;
+    }
+    return CELL_TYPES.WALL; // Default to wall for invalid values
+  };
+  
   return (
     <div className="flex flex-col items-center">
       {/* Maze Container */}
@@ -325,11 +334,10 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
           }}
         >
           {maze.map((row, y) =>
-            row.map((cellType, x) => (
+            row.map((cellValue, x) => (
               <MazeCell
                 key={`cell-${x}-${y}`}
-                // FIX 2: Add a type assertion to satisfy the updated CellProps interface.
-                type={cellType as CellType}
+                type={getCellType(cellValue)}
                 x={x}
                 y={y}
                 cellSize={cellSize}
@@ -384,72 +392,6 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
           <span>Wall</span>
         </div>
       </div>
-    </div>
-  );
-};
-
-// ==================== ADDITIONAL COMPONENTS ====================
-
-// Mini-map component for large mazes
-export const MazeMiniMap: React.FC<{
-  maze: number[][];
-  playerPos: Position;
-  enemies: Position[];
-  scale?: number;
-}> = ({ maze, playerPos, enemies, scale = 0.3 }) => {
-  const miniCellSize = Math.max(2, Math.floor(20 * scale));
-  
-  return (
-    <div className="mini-map bg-black/50 p-2 rounded">
-      <div className="text-xs text-white mb-1 text-center">Mini Map</div>
-      <MazeRenderer
-        maze={maze}
-        playerPos={playerPos}
-        enemies={enemies}
-        cellSize={miniCellSize}
-        showGrid={false}
-        animations={false}
-        theme="neon"
-      />
-    </div>
-  );
-};
-
-// Maze editor component
-export const MazeEditor: React.FC<{
-  maze: number[][];
-  onCellEdit: (x: number, y: number, newType: number) => void;
-  selectedTool: number;
-}> = ({ maze, onCellEdit, selectedTool }) => {
-  return (
-    <div className="maze-editor">
-      <div className="mb-4">
-        <div className="text-sm font-bold mb-2">Editor Tools:</div>
-        <div className="flex gap-2">
-          {Object.entries(CELL_TYPES).map(([name, value]) => (
-            <button
-              key={name}
-              className={`px-3 py-1 rounded text-xs ${
-                selectedTool === value 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      </div>
-      
-      <MazeRenderer
-        maze={maze}
-        playerPos={{ x: -1, y: -1 }} // Hide player in editor
-        enemies={[]}
-        cellSize={24}
-        showGrid={true}
-        animations={false}
-        onCellClick={(x, y) => onCellEdit(x, y, selectedTool)}
-      />
     </div>
   );
 };

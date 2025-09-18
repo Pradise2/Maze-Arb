@@ -20,9 +20,9 @@ export const useGameTimer = (
 ): GameTimer => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isRunning, setIsRunning] = useState(false);
-  // FIX: Changed the ref type to allow for 'undefined'
- const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
- const startTimeRef = useRef<number>(0);
+  // FIX: Use undefined instead of null for NodeJS.Timeout
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
 
   const startTimer = useCallback((initialTime: number) => {
@@ -36,7 +36,7 @@ export const useGameTimer = (
     setIsRunning(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
-      timerRef.current = undefined;
+      timerRef.current = undefined; // Set to undefined after clearing
     }
   }, []);
 
@@ -44,6 +44,10 @@ export const useGameTimer = (
     if (isRunning) {
       setIsRunning(false);
       pausedTimeRef.current = Date.now();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = undefined;
+      }
     }
   }, [isRunning]);
 
@@ -96,6 +100,7 @@ export const useGameTimer = (
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = undefined;
       }
     };
   }, [gameState, isRunning, onTimeUp]);
