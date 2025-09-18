@@ -1,12 +1,10 @@
-// src/App.tsx
-
+// src/App.tsx - Clean Version
+import React from 'react';
 import MazeGame from './components/MazeGame';
-// DELETE THIS LINE: import './App.css';
 
 function App() {
-  // REMOVE the className="App" from the div
   return (
-    <div>
+    <div className="min-h-screen">
       <MazeGame />
     </div>
   );
