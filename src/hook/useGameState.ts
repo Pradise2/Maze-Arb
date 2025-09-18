@@ -1,15 +1,6 @@
-// hooks/useGameState.ts - Game State Management Hook
+// src/hook/useGameState.ts - Game State Management Hook
 import { useState, useCallback, useEffect } from 'react';
-
-type GameState = 'menu' | 'playing' | 'paused' | 'won' | 'lost' | 'completed';
-
-interface Level {
-  id: number;
-  name: string;
-  maze: number[][];
-  timeLimit: number;
-  collectibles: number;
-}
+import { GameState, Level } from '../types/game.types';
 
 interface GameStateHook {
   gameState: GameState;
