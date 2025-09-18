@@ -1,6 +1,6 @@
-
-// hooks/useGameTimer.ts - Game Timer Management Hook
+// hooks/useGameTimer.ts - Game Timer Management Hook (Fixed)
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { GameState } from '../types/game.types';
 
 interface GameTimer {
   timeLeft: number;
