@@ -1,42 +1,110 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
+/* Basic fallback styles for the maze game */
+.maze-container {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 2px solid #e5e7eb;
+}
+
+.maze-grid {
+  display: grid;
+  gap: 1px;
+}
+
+.game-controls button {
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.game-controls button:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+.game-controls button:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Basic modal styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 1rem;
   padding: 2rem;
-  text-align: center;
+  max-width: 28rem;
+  width: 100%;
+  margin: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* Basic maze cell styles */
+.cell-wall { background: #1f2937; }
+.cell-path { background: #f3f4f6; }
+.cell-exit { background: #10b981; }
+.cell-collectible { 
+  background: #fbbf24; 
+  border-radius: 50%;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.cell-player { 
+  background: #3b82f6; 
+  border-radius: 50%;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.cell-enemy { 
+  background: #ef4444; 
+  border-radius: 50%;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Responsive grid */
+@media (max-width: 768px) {
+  .maze-container {
+    padding: 0.5rem;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .game-controls button {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0.75rem;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Basic animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.card {
-  padding: 2em;
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
-.read-the-docs {
-  color: #888;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
+
+.animate-pulse { animation: pulse 2s infinite; }
+.animate-bounce { animation: bounce 1s infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
