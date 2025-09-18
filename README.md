@@ -202,23 +202,23 @@ Navigate through each maze, collect all the yellow stars ⭐, and reach the gree
 ```typescript
 // Game state management
 const useGameState = (initialState) => {
-  // Handles game state transitions
-  // Manages level progression
-  // Tracks statistics
+    // Handles game state transitions
+      // Manages level progression
+        // Tracks statistics
 }
 
 // Player movement
 const usePlayerMovement = (maze, gameState) => {
-  // Validates moves against walls
-  // Handles collision detection
-  // Updates player position
+    // Validates moves against walls
+      // Handles collision detection
+        // Updates player position
 }
 
 // Enemy AI
 const useEnemyAI = (maze, playerPos) => {
-  // Implements chase behavior
-  // Manages patrol patterns
-  // Handles collision avoidance
+    // Implements chase behavior
+      // Manages patrol patterns
+        // Handles collision avoidance
 }
 ```
 
@@ -233,19 +233,19 @@ const useEnemyAI = (maze, playerPos) => {
 ### Theme Configuration
 ```typescript
 const themes = {
-  default: {
-    wall: 'bg-gray-800',
-    path: 'bg-gray-100',
-    player: 'bg-blue-500',
-    enemy: 'bg-red-500'
-  },
-  neon: {
-    wall: 'bg-purple-900 shadow-purple-500/20',
-    path: 'bg-gray-900',
-    player: 'bg-cyan-400 shadow-cyan-400/50',
-    enemy: 'bg-red-500 shadow-red-500/50'
-  }
-  // ... more themes
+    default: {
+          wall: 'bg-gray-800',
+              path: 'bg-gray-100',
+                  player: 'bg-blue-500',
+                      enemy: 'bg-red-500'
+    },
+      neon: {
+            wall: 'bg-purple-900 shadow-purple-500/20',
+                path: 'bg-gray-900',
+                    player: 'bg-cyan-400 shadow-cyan-400/50',
+                        enemy: 'bg-red-500 shadow-red-500/50'
+      }
+        // ... more themes
 }
 ```
 
@@ -254,23 +254,23 @@ const themes = {
 ### Game Settings
 ```typescript
 interface GameSettings {
-  soundEnabled: boolean;        // Audio feedback
-  musicEnabled: boolean;        // Background music
-  difficulty: 'easy' | 'normal' | 'hard';
-  theme: 'default' | 'neon' | 'forest' | 'space';
-  controlStyle: 'compact' | 'comfortable' | 'large';
-  animations: boolean;          // Visual effects
+    soundEnabled: boolean;        // Audio feedback
+      musicEnabled: boolean;        // Background music
+        difficulty: 'easy' | 'normal' | 'hard';
+          theme: 'default' | 'neon' | 'forest' | 'space';
+            controlStyle: 'compact' | 'comfortable' | 'large';
+              animations: boolean;          // Visual effects
 }
 ```
 
 ### Level Configuration
 ```typescript
 interface Level {
-  id: number;
-  name: string;
-  maze: number[][];            // 2D array maze layout
-  timeLimit: number;           // Seconds to complete
-  collectibles: number;        // Stars to collect
+    id: number;
+      name: string;
+        maze: number[][];            // 2D array maze layout
+          timeLimit: number;           // Seconds to complete
+            collectibles: number;        // Stars to collect
 }
 ```
 
@@ -337,16 +337,16 @@ CMD ["npm", "start"]
 ```css
 /* Touch-friendly controls */
 @media (max-width: 768px) {
-  .game-controls button {
-    min-width: 48px;
-    min-height: 48px;
-    padding: 12px;
-  }
+    .game-controls button {
+          min-width: 48px;
+              min-height: 48px;
+                  padding: 12px;
+    }
 }
 
 /* Prevent zoom on input */
 input, button {
-  font-size: 16px;
+    font-size: 16px;
 }
 ```
 
@@ -370,9 +370,9 @@ import { render, screen } from '@testing-library/react';
 import MazeGame from './MazeGame';
 
 test('renders game title', () => {
-  render(<MazeGame />);
-  const titleElement = screen.getByText(/maze master/i);
-  expect(titleElement).toBeInTheDocument();
+    render(<MazeGame />);
+      const titleElement = screen.getByText(/maze master/i);
+        expect(titleElement).toBeInTheDocument();
 });
 ```
 
@@ -507,3 +507,16 @@ A: Absolutely! The game is fully responsive and optimized for mobile devices.
 Made with ❤️ by [Your Name](https://github.com/yourusername)
 
 **[⬆ Back to Top](#-maze-master-game)**
+>>>>
+})
+}
+    }
+}
+}
+}
+      }
+    }
+}
+}
+}
+}
