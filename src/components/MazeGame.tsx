@@ -1,4 +1,5 @@
-// src/components/MazeGame.tsx - Enhanced with Performance Optimizations
+// Updated MazeGame.tsx integration with AI Enemy System
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Position, GameSettings } from '../types/game.types';
 
@@ -8,6 +9,7 @@ import { useGameState } from '../hooks/useGameState';
 import { useGameTimer } from '../hooks/useGameTimer';
 import { usePlayerMovement } from '../hooks/usePlayerMovement';
 import { useEnemyAI } from '../hooks/useEnemyAI';
+import { useEnhancedEnemyAI } from '../hooks/useEnhancedEnemyAI';
 import { useSound } from '../hooks/useSound';
 import { useGameAnalytics } from '../hooks/useGameAnalytics';
 
@@ -15,6 +17,7 @@ import MainMenu from './MainMenu';
 import MazeRenderer from './MazeRenderer';
 import GameControls from './GameControls';
 import GameHUD from './GameHUD';
+import AIConfigPanel from './AIConfigPanel';
 import { GameAnalyticsPanel } from './GameAnalyticsPanel';
 import {
   GameOverModal,
@@ -23,23 +26,45 @@ import {
   PauseModal
 } from './GameModals';
 
+interface AIConfig {
+  enabled: boolean;
+  apiKey: string;
+  model: string;
+  intelligence: number;
+  aggressiveness: number;
+  cooperation: number;
+  adaptability: number;
+  costPerHour: number;
+}
+
 interface MazeGameProps {
   initialSettings?: Partial<GameSettings>;
 }
 
 const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
-  // Game settings
+  // Game settings with AI config
   const [settings, setSettings] = useState<GameSettings>({
     ...DEFAULT_SETTINGS,
     ...initialSettings
   });
 
-  // Debug panel state
+  // AI Configuration
+  const [aiConfig, setAIConfig] = useState<AIConfig>({
+    enabled: false,
+    apiKey: localStorage.getItem('maze_ai_key') || '',
+    model: 'openai/gpt-3.5-turbo',
+    intelligence: 60,
+    aggressiveness: 60,
+    cooperation: 50,
+    adaptability: 55,
+    costPerHour: 0.02
+  });
+
+  // Debug panels
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Current maze state
   const [currentMaze, setCurrentMaze] = useState<number[][]>([]);
-  const [enemies, setEnemies] = useState<Position[]>([]);
 
   // Game state management
   const gameStateHook = useGameState(LEVELS);
@@ -80,14 +105,26 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
   );
   const { playerPos, movePlayer, setPlayerPosition } = playerMovement;
 
-  // Enemy AI
-  const enemyAI = useEnemyAI(
+  // Enhanced AI Enemy System (when AI is enabled)
+  const enhancedEnemyAI = useEnhancedEnemyAI(
+    currentMaze,
+    playerPos,
+    gameState,
+    settings.difficulty,
+    aiConfig.enabled,
+    aiConfig.apiKey
+  );
+
+  // Basic Enemy AI System (fallback)
+  const basicEnemyAI = useEnemyAI(
     currentMaze,
     playerPos,
     gameState,
     settings.difficulty
   );
-  const { updateEnemies, isPlayerCaught, resetEnemies } = enemyAI;
+
+  // Choose which AI system to use
+  const activeEnemyAI = aiConfig.enabled && aiConfig.apiKey ? enhancedEnemyAI : basicEnemyAI;
 
   // Sound effects
   const { playSound } = useSound(settings.soundEnabled);
@@ -99,33 +136,52 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
   // Performance optimization: Memoize current level data
   const currentLevelData = useMemo(() => LEVELS[currentLevel], [currentLevel]);
 
+  // Save AI config to localStorage
+  useEffect(() => {
+    localStorage.setItem('maze_ai_key', aiConfig.apiKey);
+  }, [aiConfig.apiKey]);
+
+  // Update AI config cost estimation
+  useEffect(() => {
+    const baseRate = aiConfig.model.includes('gpt-4') ? 0.03 : 
+                    aiConfig.model.includes('gpt-3.5') ? 0.015 :
+                    aiConfig.model.includes('claude-3-sonnet') ? 0.003 : 0.001;
+    
+    const complexityMultiplier = (aiConfig.intelligence + aiConfig.aggressiveness + aiConfig.cooperation) / 300;
+    const estimatedCost = baseRate * complexityMultiplier * 60; // per hour
+    
+    setAIConfig(prev => ({ ...prev, costPerHour: estimatedCost }));
+  }, [aiConfig.model, aiConfig.intelligence, aiConfig.aggressiveness, aiConfig.cooperation]);
+
   // Initialize level data
   const initializeCurrentLevel = useCallback(() => {
     const level = LEVELS[currentLevel];
     if (!level) return;
 
-    // Set maze
     setCurrentMaze(cloneMaze(level.maze));
-    
-    // Set player position
     setPlayerPosition(level.playerStart);
     
-    // Set enemies
-    setEnemies(level.enemyPositions);
-    resetEnemies(level.enemyPositions);
+    // Initialize enemies with appropriate AI system
+    if (aiConfig.enabled && aiConfig.apiKey) {
+      enhancedEnemyAI.initializeEnemies(level.enemyPositions);
+    } else {
+      basicEnemyAI.resetEnemies(level.enemyPositions);
+    }
     
-    // Start timer
     gameTimer.startTimer(level.timeLimit);
     setTimeLeft(level.timeLimit);
     
-    // Analytics
     analytics.addEvent({ 
       type: 'level_start', 
-      data: { level: currentLevel, name: level.name } 
+      data: { 
+        level: currentLevel, 
+        name: level.name,
+        aiEnabled: aiConfig.enabled 
+      } 
     });
     
     playSound('start');
-  }, [currentLevel, setPlayerPosition, resetEnemies, gameTimer, setTimeLeft, analytics, playSound]);
+  }, [currentLevel, setPlayerPosition, aiConfig.enabled, aiConfig.apiKey, enhancedEnemyAI, basicEnemyAI, gameTimer, setTimeLeft, analytics, playSound]);
 
   // Handle item collection
   function handleCollectItem() {
@@ -133,7 +189,6 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     setCurrentMaze(newMaze);
     collectItem();
     
-    // Analytics
     analytics.addEvent({ 
       type: 'collect',
       data: { position: playerPos, remaining: currentLevelData.collectibles - collectedItems - 1 }
@@ -148,14 +203,14 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
       setGameState('won');
       gameTimer.stopTimer();
       
-      // Analytics
       analytics.addEvent({
         type: 'level_complete',
         data: {
           level: currentLevel,
           score,
           timeLeft,
-          perfect: collectedItems === currentLevelData.collectibles
+          perfect: collectedItems === currentLevelData.collectibles,
+          aiEnabled: aiConfig.enabled
         }
       });
       
@@ -167,7 +222,6 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
   const handleMove = useCallback((dx: number, dy: number) => {
     if (gameState !== 'playing') return;
 
-    // Rate limiting
     const now = performance.now();
     if (now - lastUpdateRef.current < 100) return;
     lastUpdateRef.current = now;
@@ -179,7 +233,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     }
   }, [gameState, movePlayer, playSound, playerPos, analytics]);
 
-  // Handle pause/resume
+  // Other game handlers...
   const handlePause = useCallback(() => {
     if (gameState === 'playing') {
       setGameState('paused');
@@ -193,7 +247,6 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     }
   }, [gameState, setGameState, gameTimer, analytics, playSound]);
 
-  // Handle level reset
   const handleReset = useCallback(() => {
     resetLevel();
     initializeCurrentLevel();
@@ -202,28 +255,24 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     playSound('reset');
   }, [resetLevel, initializeCurrentLevel, setGameState, analytics, currentLevel, playSound]);
 
-  // Handle return to menu
   const handleMenu = useCallback(() => {
     gameTimer.stopTimer();
     setGameState('menu');
     analytics.addEvent({ type: 'return_to_menu' });
   }, [gameTimer, setGameState, analytics]);
 
-  // Handle start game
   const handleStartGame = useCallback(() => {
     initializeLevel(0);
     initializeCurrentLevel();
-    analytics.addEvent({ type: 'game_start' });
-  }, [initializeLevel, initializeCurrentLevel, analytics]);
+    analytics.addEvent({ type: 'game_start', data: { aiEnabled: aiConfig.enabled } });
+  }, [initializeLevel, initializeCurrentLevel, analytics, aiConfig.enabled]);
 
-  // Handle level select
   const handleLevelSelect = useCallback((levelIndex: number) => {
     initializeLevel(levelIndex);
     initializeCurrentLevel();
-    analytics.addEvent({ type: 'level_select', data: { level: levelIndex } });
-  }, [initializeLevel, initializeCurrentLevel, analytics]);
+    analytics.addEvent({ type: 'level_select', data: { level: levelIndex, aiEnabled: aiConfig.enabled } });
+  }, [initializeLevel, initializeCurrentLevel, analytics, aiConfig.enabled]);
 
-  // Handle next level
   const handleNextLevel = useCallback(() => {
     nextLevel();
     if (currentLevel + 1 < LEVELS.length) {
@@ -231,28 +280,34 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     }
   }, [nextLevel, currentLevel, initializeCurrentLevel]);
 
-  // Handle game complete
   const handlePlayAgain = useCallback(() => {
     initializeLevel(0);
     initializeCurrentLevel();
-    analytics.addEvent({ type: 'play_again' });
-  }, [initializeLevel, initializeCurrentLevel, analytics]);
+    analytics.addEvent({ type: 'play_again', data: { aiEnabled: aiConfig.enabled } });
+  }, [initializeLevel, initializeCurrentLevel, analytics, aiConfig.enabled]);
 
-  // Optimized game loop for enemy movement and collision detection
+  // Enhanced game loop for enemy movement and collision detection
   useEffect(() => {
     if (gameState === 'playing') {
+      const intervalTime = aiConfig.enabled ? 600 : activeEnemyAI.enemyMoveInterval || 800;
+      
       gameLoopRef.current = setInterval(() => {
-        // Update enemies
-        updateEnemies();
+        activeEnemyAI.updateEnemies();
         
-        // Check for player-enemy collision
-        if (isPlayerCaught(playerPos)) {
+        if (activeEnemyAI.isPlayerCaught(playerPos)) {
           setGameState('lost');
           gameTimer.stopTimer();
-          analytics.addEvent({ type: 'enemy_hit', data: { position: playerPos } });
+          analytics.addEvent({ 
+            type: 'enemy_hit', 
+            data: { 
+              position: playerPos,
+              aiEnabled: aiConfig.enabled,
+              enemyType: aiConfig.enabled ? 'enhanced' : 'basic'
+            } 
+          });
           playSound('lose');
         }
-      }, enemyAI.enemyMoveInterval);
+      }, intervalTime);
     } else {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
@@ -264,12 +319,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
         clearInterval(gameLoopRef.current);
       }
     };
-  }, [gameState, updateEnemies, isPlayerCaught, playerPos, setGameState, gameTimer, analytics, playSound, enemyAI.enemyMoveInterval]);
-
-  // Update enemies state when enemyAI changes
-  useEffect(() => {
-    setEnemies(enemyAI.enemies);
-  }, [enemyAI.enemies]);
+  }, [gameState, activeEnemyAI, playerPos, setGameState, gameTimer, analytics, playSound, aiConfig.enabled]);
 
   // Initialize first level when game starts
   useEffect(() => {
@@ -282,6 +332,25 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
   const handleSettingsChange = useCallback((newSettings: GameSettings) => {
     setSettings(newSettings);
   }, []);
+
+  // AI config change handler
+  const handleAIConfigChange = useCallback((newConfig: AIConfig) => {
+    setAIConfig(newConfig);
+    
+    // Reinitialize enemies if AI status changed
+    if (newConfig.enabled !== aiConfig.enabled) {
+      const level = LEVELS[currentLevel];
+      if (level && gameState === 'playing') {
+        setTimeout(() => {
+          if (newConfig.enabled && newConfig.apiKey) {
+            enhancedEnemyAI.initializeEnemies(level.enemyPositions);
+          } else {
+            basicEnemyAI.resetEnemies(level.enemyPositions);
+          }
+        }, 100);
+      }
+    }
+  }, [aiConfig.enabled, currentLevel, gameState, enhancedEnemyAI, basicEnemyAI]);
 
   // Sound toggle handler
   const handleSoundToggle = useCallback(() => {
@@ -300,9 +369,20 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     );
   }
 
-  // Calculate remaining collectibles
-  const remainingCollectibles = currentLevelData ? 
-    currentLevelData.collectibles - collectedItems : 0;
+  // Get enemy stats for AI panel
+  const getEnemyStats = () => {
+    if (aiConfig.enabled && 'smartEnemies' in activeEnemyAI) {
+      return activeEnemyAI.smartEnemies.map(enemy => ({
+        id: enemy.id,
+        type: enemy.personality.type,
+        state: enemy.state,
+        energy: enemy.energy,
+        intelligence: Math.round(enemy.personality.intelligence * 100),
+        lastAction: enemy.state
+      }));
+    }
+    return [];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4">
@@ -329,7 +409,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
             <MazeRenderer
               maze={currentMaze}
               playerPos={playerPos}
-              enemies={enemies}
+              enemies={activeEnemyAI.enemies}
               theme={settings.theme}
               animations={settings.animations}
               cellSize={24}
@@ -349,6 +429,22 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
               soundEnabled={settings.soundEnabled}
               onSoundToggle={handleSoundToggle}
             />
+
+            {/* AI Insights Panel (when AI enabled) */}
+            {aiConfig.enabled && 'aiInsights' in activeEnemyAI && activeEnemyAI.aiInsights.length > 0 && (
+              <div className="mt-4 bg-black/30 backdrop-blur-md rounded-xl p-4">
+                <h3 className="text-white font-bold mb-2 flex items-center gap-2">
+                  🧠 AI Analysis
+                </h3>
+                <div className="space-y-1">
+                  {activeEnemyAI.aiInsights.slice(-3).map((insight, index) => (
+                    <div key={index} className="text-xs text-white/70">
+                      • {insight}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -363,6 +459,15 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
           </div>
         )}
       </div>
+
+      {/* AI Configuration Panel */}
+      <AIConfigPanel
+        config={aiConfig}
+        onConfigChange={handleAIConfigChange}
+        enemyStats={getEnemyStats()}
+        aiInsights={'aiInsights' in activeEnemyAI ? activeEnemyAI.aiInsights : []}
+        isGameActive={gameState === 'playing'}
+      />
 
       {/* Analytics Panel (Development) */}
       {process.env.NODE_ENV === 'development' && (
@@ -411,7 +516,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
           totalTime: LEVELS.reduce((sum, level) => sum + level.timeLimit, 0) - timeLeft,
           levelsCompleted: LEVELS.length,
           totalStars: LEVELS.reduce((sum, level) => sum + level.collectibles, 0),
-          perfectLevels: 0, // This would need proper tracking
+          perfectLevels: 0,
           rank: 'Master'
         }}
       />
