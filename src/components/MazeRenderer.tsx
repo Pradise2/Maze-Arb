@@ -1,4 +1,4 @@
-// MazeRenderer.tsx - Maze Visualization Component (Fixed)
+// MazeRenderer.tsx - Fixed Type Issues
 import React, { useMemo } from 'react';
 
 // ==================== INTERFACES ====================
@@ -30,10 +30,8 @@ const CELL_TYPES = {
   ENEMY: 5
 } as const;
 
-// FIX: Define proper CellType
 type CellType = typeof CELL_TYPES[keyof typeof CELL_TYPES];
 
-// FIX: Update CellProps to use CellType
 interface CellProps {
   type: CellType;
   x: number;
@@ -87,7 +85,6 @@ const THEMES = {
   }
 };
 
-// Cell content mapping - FIX: Use proper Record type
 const CELL_CONTENT: Record<CellType, string> = {
   [CELL_TYPES.WALL]: '',
   [CELL_TYPES.PATH]: '',
@@ -95,7 +92,7 @@ const CELL_CONTENT: Record<CellType, string> = {
   [CELL_TYPES.COLLECTIBLE]: '⭐',
   [CELL_TYPES.PLAYER]: '😊',
   [CELL_TYPES.ENEMY]: '👾'
-} as const;
+};
 
 // ==================== SUB-COMPONENTS ====================
 
@@ -113,31 +110,25 @@ const MazeCell: React.FC<CellProps> = ({
 }) => {
   const themeConfig = THEMES[theme as keyof typeof THEMES] || THEMES.default;
   
-  // Determine cell appearance
   const getCellClasses = (): string => {
     let baseClasses = `relative flex items-center justify-center text-xs font-bold transition-all duration-200`;
     
-    // Add size classes
     if (cellSize <= 16) baseClasses += ' text-[8px]';
     else if (cellSize <= 24) baseClasses += ' text-xs';
     else baseClasses += ' text-sm';
     
-    // Add grid border if enabled
     if (showGrid) {
       baseClasses += ` border ${themeConfig.grid}`;
     }
     
-    // Add hover effect if clickable
     if (onClick) {
       baseClasses += ' cursor-pointer hover:opacity-80';
     }
     
-    // Add animations
     if (animations) {
       baseClasses += ' hover:scale-105';
     }
     
-    // Determine background based on occupants and cell type
     if (hasPlayer) {
       baseClasses += ` ${themeConfig.player} rounded-full`;
       if (animations) baseClasses += ' animate-pulse';
@@ -168,36 +159,23 @@ const MazeCell: React.FC<CellProps> = ({
     return baseClasses;
   };
   
-  // Determine cell content
   const getCellContent = (): string => {
     if (hasPlayer) return CELL_CONTENT[CELL_TYPES.PLAYER];
     if (hasEnemy) return CELL_CONTENT[CELL_TYPES.ENEMY];
     return CELL_CONTENT[type] || '';
   };
   
-  // FIX: Helper function to get cell type name for debugging
-  const getCellTypeName = (cellType: CellType): string => {
-    return Object.keys(CELL_TYPES)[Object.values(CELL_TYPES).indexOf(cellType)] || 'UNKNOWN';
-  };
-  
-  // Add special effects for certain cell types
   const getSpecialEffects = () => {
     if (type === CELL_TYPES.EXIT && animations) {
-      return (
-        <div className="absolute inset-0 bg-green-400/20 rounded animate-ping" />
-      );
+      return <div className="absolute inset-0 bg-green-400/20 rounded animate-ping" />;
     }
     
     if (type === CELL_TYPES.COLLECTIBLE && animations) {
-      return (
-        <div className="absolute inset-0 bg-yellow-400/30 rounded-full animate-pulse" />
-      );
+      return <div className="absolute inset-0 bg-yellow-400/30 rounded-full animate-pulse" />;
     }
     
     if (hasPlayer && animations) {
-      return (
-        <div className="absolute inset-0 bg-blue-400/30 rounded-full animate-ping" />
-      );
+      return <div className="absolute inset-0 bg-blue-400/30 rounded-full animate-ping" />;
     }
     
     return null;
@@ -213,60 +191,12 @@ const MazeCell: React.FC<CellProps> = ({
         minHeight: `${cellSize}px`
       }}
       onClick={onClick}
-      title={`Cell (${x}, ${y}) - Type: ${getCellTypeName(type)}`}
+      title={`Cell (${x}, ${y})`}
     >
       {getSpecialEffects()}
       <span className="relative z-10">
         {getCellContent()}
       </span>
-      
-      {/* Debug info (only show in development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-0 left-0 text-[6px] opacity-50">
-          {x},{y}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Maze statistics component
-const MazeStats: React.FC<{
-  maze: number[][];
-  playerPos: Position;
-  enemies: Position[];
-}> = ({ maze, enemies }) => {
-  const stats = useMemo(() => {
-    let walls = 0;
-    let paths = 0;
-    let exits = 0;
-    let collectibles = 0;
-    
-    maze.forEach(row => {
-      row.forEach(cell => {
-        switch (cell) {
-          case CELL_TYPES.WALL: walls++; break;
-          case CELL_TYPES.PATH: paths++; break;
-          case CELL_TYPES.EXIT: exits++; break;
-          case CELL_TYPES.COLLECTIBLE: collectibles++; break;
-        }
-      });
-    });
-    
-    return {
-      dimensions: `${maze[0]?.length || 0} × ${maze.length}`,
-      totalCells: maze.length * (maze[0]?.length || 0),
-      walls,
-      paths,
-      exits,
-      collectibles,
-      enemies: enemies.length
-    };
-  }, [maze, enemies]);
-  
-  return (
-    <div className="text-xs text-gray-500 mt-2 text-center">
-      <div>Size: {stats.dimensions} | Walls: {stats.walls} | Collectibles: {stats.collectibles} | Enemies: {stats.enemies}</div>
     </div>
   );
 };
@@ -283,7 +213,6 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
   theme = 'default',
   onCellClick
 }) => {
-  // Validate maze data
   const isValidMaze = maze && maze.length > 0 && maze[0] && maze[0].length > 0;
   
   if (!isValidMaze) {
@@ -297,40 +226,29 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
     );
   }
   
-  // Calculate maze dimensions
-  const mazeWidth = maze[0].length * cellSize;
-  const mazeHeight = maze.length * cellSize;
-  
-  // Helper function to check if position has entity
   const hasPlayer = (x: number, y: number): boolean => 
     playerPos.x === x && playerPos.y === y;
     
   const hasEnemy = (x: number, y: number): boolean =>
     enemies.some(enemy => enemy.x === x && enemy.y === y);
   
-  // FIX: Helper function to safely cast cell type
   const getCellType = (cellValue: number): CellType => {
     if (Object.values(CELL_TYPES).includes(cellValue as CellType)) {
       return cellValue as CellType;
     }
-    return CELL_TYPES.WALL; // Default to wall for invalid values
+    return CELL_TYPES.WALL;
   };
   
   return (
     <div className="flex flex-col items-center">
-      {/* Maze Container */}
       <div className="maze-container bg-white p-4 rounded-xl shadow-2xl border-2 border-gray-200">
-        
-        {/* Maze Grid */}
         <div 
           className="maze-grid relative"
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${maze[0].length}, ${cellSize}px)`,
             gridTemplateRows: `repeat(${maze.length}, ${cellSize}px)`,
-            gap: showGrid ? '1px' : '0px',
-            width: `${mazeWidth}px`,
-            height: `${mazeHeight}px`
+            gap: showGrid ? '1px' : '0px'
           }}
         >
           {maze.map((row, y) =>
@@ -351,23 +269,7 @@ const MazeRenderer: React.FC<MazeRendererProps> = ({
             ))
           )}
         </div>
-        
-        {/* Maze overlay effects */}
-        {animations && (
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Add particle effects or other overlays here */}
-          </div>
-        )}
       </div>
-      
-      {/* Maze Statistics */}
-      {process.env.NODE_ENV === 'development' && (
-        <MazeStats 
-          maze={maze} 
-          playerPos={playerPos} 
-          enemies={enemies} 
-        />
-      )}
       
       {/* Legend */}
       <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs bg-gray-50 p-3 rounded-lg">
