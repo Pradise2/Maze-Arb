@@ -1,11 +1,12 @@
-// src/App.tsx - Main Application Component
+// src/App.tsx
 
 import MazeGame from './components/MazeGame';
-import './App.css';
+// DELETE THIS LINE: import './App.css';
 
 function App() {
+  // REMOVE the className="App" from the div
   return (
-    <div className="App">
+    <div>
       <MazeGame />
     </div>
   );
