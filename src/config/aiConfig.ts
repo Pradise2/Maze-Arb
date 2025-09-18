@@ -322,4 +322,72 @@ export const AIConfigPanel: React.FC<{
           
           {/* Advanced Settings */}
           <button
-            onClick={() => setShowAdvance
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="text-blue-400 hover:underline text-sm mb-4"
+          >
+            {showAdvanced ? 'Hide' : 'Show'} Advanced Settings
+          </button>
+          
+          {showAdvanced && (
+            <div className="space-y-3 mb-4 bg-gray-700 rounded p-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Temperature</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={config.temperature}
+                  onChange={(e) => onConfigChange({ ...config, temperature: parseFloat(e.target.value) })}
+                  className="w-full"
+                />
+                <div className="text-xs text-gray-400">
+                  {config.temperature} (Lower = more predictable, Higher = more creative)
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Max Tokens</label>
+                <input
+                  type="number"
+                  min="100"
+                  max="4000"
+                  value={config.maxTokens}
+                  onChange={(e) => onConfigChange({ ...config, maxTokens: parseInt(e.target.value) })}
+                  className="w-full bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Request Timeout (ms)</label>
+                <input
+                  type="number"
+                  min="1000"
+                  max="30000"
+                  value={config.requestTimeout}
+                  onChange={(e) => onConfigChange({ ...config, requestTimeout: parseInt(e.target.value) })}
+                  className="w-full bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white"
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Validation Errors */}
+          {!validation.valid && (
+            <div className="bg-red-900/50 border border-red-500 rounded p-3 mb-4">
+              <div className="text-red-300 text-sm font-medium mb-2">Configuration Issues:</div>
+              <ul className="text-red-200 text-sm space-y-1">
+                {validation.errors.map((error, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <span className="text-red-400">•</span>
+                    {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
