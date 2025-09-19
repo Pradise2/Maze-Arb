@@ -2,9 +2,30 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Maze Arb</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"
+    />
+
+    <meta
+      name="fc:frame"
+      content='{ 
+        "version": "next",
+        "imageUrl": "https://maze-arb.vercel.app/image.png",
+        "button": {
+          "title": "Launch",
+          "action": {
+            "type": "launch_frame",
+            "url": "https://maze-arb.vercel.app",
+            "name": "Maze-arb",
+            "splashImageUrl": "https://maze-arb.vercel.app/image.png",
+            "splashBackgroundColor": "#D0F9F6"
+          }
+        }
+      }'
+    />
+
+    <title>Maze-arb</title>
   </head>
   <body>
     <div id="root"></div>

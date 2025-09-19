@@ -6,7 +6,7 @@
   },
   "frame": {
     "version": "1",
-    "name": "Example Frame",
+    "name": "maze-arb",
     "iconUrl": "https://maze-arb.vercel.app/icon.png",
     "homeUrl": "https://maze-arb.vercel.app",
     "imageUrl": "https://maze-arb.vercel.app/image.png",
