@@ -348,4 +348,245 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
                   <div className="mt-2">
                     <div className="flex justify-between text-xs mb-1">
                       <span>Evolution Progress</span>
-                      <span>{Math.min(100, (nft.experience % 1000) / 10).to
+                      <span>{Math.min(100, (nft.experience % 1000) / 10).toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-300 rounded-full h-1">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-1 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${Math.min(100, (nft.experience % 1000) / 10)}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// components/NFTLevelDesigner.tsx - Level Design NFT Creator
+interface NFTLevelDesignerProps {
+  onCreateLevel: (levelData: any) => void;
+  isAIEnabled: boolean;
+}
+
+export const NFTLevelDesigner: React.FC<NFTLevelDesignerProps> = ({
+  onCreateLevel,
+  isAIEnabled
+}) => {
+  const [mazeSize, setMazeSize] = useState({ width: 15, height: 15 });
+  const [difficulty, setDifficulty] = useState(1);
+  const [useAI, setUseAI] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateLevel = async () => {
+    setIsGenerating(true);
+    
+    try {
+      if (useAI && isAIEnabled) {
+        // AI-generated level
+        const aiLevelData = await generateAILevel(mazeSize, difficulty);
+        onCreateLevel(aiLevelData);
+      } else {
+        // Manual level creation
+        const manualLevelData = await generateBasicLevel(mazeSize, difficulty);
+        onCreateLevel(manualLevelData);
+      }
+    } catch (error) {
+      console.error('Failed to generate level:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-gray-800 rounded-xl text-white">
+      <h2 className="text-2xl font-bold mb-6">Create Level Design NFT</h2>
+      
+      <div className="space-y-6">
+        {/* Size Controls */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Maze Size</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Width</label>
+              <input
+                type="range"
+                min="9"
+                max="25"
+                step="2"
+                value={mazeSize.width}
+                onChange={(e) => setMazeSize(prev => ({ 
+                  ...prev, 
+                  width: parseInt(e.target.value) 
+                }))}
+                className="w-full"
+              />
+              <span className="text-sm">{mazeSize.width}</span>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Height</label>
+              <input
+                type="range"
+                min="9"
+                max="25"
+                step="2"
+                value={mazeSize.height}
+                onChange={(e) => setMazeSize(prev => ({ 
+                  ...prev, 
+                  height: parseInt(e.target.value) 
+                }))}
+                className="w-full"
+              />
+              <span className="text-sm">{mazeSize.height}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Difficulty */}
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Difficulty: {['Easy', 'Normal', 'Hard', 'Expert', 'Master'][difficulty - 1]}
+          </label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            value={difficulty}
+            onChange={(e) => setDifficulty(parseInt(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        {/* AI Generation Toggle */}
+        {isAIEnabled && (
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="useAI"
+              checked={useAI}
+              onChange={(e) => setUseAI(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <label htmlFor="useAI" className="text-sm">
+              Use AI Generation (Higher rarity potential)
+            </label>
+          </div>
+        )}
+
+        {/* Generation Stats Preview */}
+        <div className="bg-gray-700 rounded-lg p-4">
+          <h3 className="font-medium mb-3">Estimated NFT Properties</h3>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-400">Complexity Score:</span>
+              <span className="ml-2 font-medium">
+                {Math.floor((mazeSize.width + mazeSize.height) / 2) + difficulty}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-400">Expected Rarity:</span>
+              <span className="ml-2 font-medium">
+                {(() => {
+                  const score = Math.floor((mazeSize.width + mazeSize.height) / 2) + difficulty;
+                  if (useAI) return score >= 12 ? 'Epic-Legendary' : 'Rare-Epic';
+                  if (score >= 15) return 'Legendary';
+                  if (score >= 12) return 'Epic';
+                  if (score >= 9) return 'Rare';
+                  if (score >= 6) return 'Uncommon';
+                  return 'Common';
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Generate Button */}
+        <button
+          onClick={generateLevel}
+          disabled={isGenerating}
+          className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 rounded-lg font-bold transition-all duration-200"
+        >
+          {isGenerating ? 'Generating Level...' : 'Create Level Design NFT'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Utility functions for level generation
+async function generateAILevel(size: { width: number; height: number }, difficulty: number) {
+  // This would integrate with your AI service
+  return {
+    maze: generateBasicMaze(size.width, size.height),
+    difficulty,
+    complexity: Math.floor((size.width + size.height) / 2) + difficulty,
+    isAIGenerated: true,
+    metadata: {
+      algorithm: 'AI-Enhanced',
+      theme: 'Procedural',
+      features: ['Dynamic Paths', 'Smart Enemy Placement']
+    }
+  };
+}
+
+async function generateBasicLevel(size: { width: number; height: number }, difficulty: number) {
+  return {
+    maze: generateBasicMaze(size.width, size.height),
+    difficulty,
+    complexity: Math.floor((size.width + size.height) / 2),
+    isAIGenerated: false,
+    metadata: {
+      algorithm: 'Recursive Backtracking',
+      theme: 'Classic',
+      features: ['Traditional Layout']
+    }
+  };
+}
+
+function generateBasicMaze(width: number, height: number): number[][] {
+  // Basic maze generation algorithm
+  const maze = Array(height).fill(null).map(() => Array(width).fill(1));
+  
+  // Simple path carving (this would be more sophisticated in practice)
+  for (let y = 1; y < height - 1; y += 2) {
+    for (let x = 1; x < width - 1; x += 2) {
+      maze[y][x] = 0; // Create path
+      
+      // Randomly connect to adjacent cells
+      if (Math.random() > 0.5 && x + 2 < width - 1) {
+        maze[y][x + 1] = 0;
+      }
+      if (Math.random() > 0.5 && y + 2 < height - 1) {
+        maze[y + 1][x] = 0;
+      }
+    }
+  }
+  
+  // Add entrance and exit
+  maze[1][1] = 2; // Player start
+  maze[height - 2][width - 2] = 3; // Exit
+  
+  // Add some collectibles
+  const pathCells = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (maze[y][x] === 0) pathCells.push({ x, y });
+    }
+  }
+  
+  // Place 3-5 collectibles randomly
+  const collectibleCount = 3 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < Math.min(collectibleCount, pathCells.length); i++) {
+    const cell = pathCells[Math.floor(Math.random() * pathCells.length)];
+    maze[cell.y][cell.x] = 4; // Collectible
+    pathCells.splice(pathCells.indexOf(cell), 1);
+  }
+  
+  return maze;
+}
