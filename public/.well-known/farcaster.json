@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMyMDI2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDFGMkE1MkYwZjlDZDYwZGY4RDAwNTdjNGE1YTEwRUFlNjQyNjNCNDgifQ",
+    "payload": "eyJkb21haW4iOiJtYXplLWFyYi52ZXJjZWwuYXBwIn0",
+    "signature": "MHg4N2U3NjU1YWQ4MzExOGEyMjc5YWJiN2JjZjQ0NjQ1NGRlYzE2Y2VjZjExNTUxYmQ1ZTI4MTRhY2U2NDQ5NmMxNmQ1Y2I5NzQyOTE1YWYzNTAwOTNhM2M3YzNmZjk1NDkxNTU1YjUwNzgxNGQ0ZTZjZGJkYmM4NzA4ZDAyZDMyMTFj"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Example Frame",
+    "iconUrl": "https://maze-arb.vercel.app/icon.png",
+    "homeUrl": "https://maze-arb.vercel.app",
+    "imageUrl": "https://maze-arb.vercel.app/image.png",
+    "buttonTitle": "Check this out",
+    "splashImageUrl": "https://maze-arb.vercel.app/splash.png",
+    "splashBackgroundColor": "#eeccff",
+    "webhookUrl": "https://maze-arb.vercel.app/api/webhook"
+  }
+}
