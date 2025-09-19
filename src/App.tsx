@@ -1,5 +1,5 @@
 // src/App.tsx - Clean Version
-import React from 'react';
+
 import MazeGame from './components/MazeGame';
 
 function App() {

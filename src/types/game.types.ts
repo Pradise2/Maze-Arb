@@ -1,4 +1,4 @@
-// src/types/game.types.ts - Game Type Definitions
+// src/types/game.types.ts - Game Type Definitions (Corrected)
 
 export interface Position {
   x: number;
@@ -6,11 +6,8 @@ export interface Position {
 }
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'won' | 'lost' | 'completed';
-
 export type Difficulty = 'easy' | 'normal' | 'hard';
-
 export type Theme = 'default' | 'neon' | 'forest' | 'space';
-
 export type ControlStyle = 'compact' | 'comfortable' | 'large';
 
 export interface Level {
@@ -95,7 +92,7 @@ export const CELL_TYPES = {
 export type CellType = typeof CELL_TYPES[keyof typeof CELL_TYPES];
 
 export interface GameEvent {
-  type: 'move' | 'collect' | 'enemy_hit' | 'level_complete' | 'game_over';
+  type: 'move' | 'collect' | 'enemy_hit' | 'level_complete' | 'game_over' | 'level_start' | 'game_start' | 'pause' | 'resume' | 'level_reset' | 'return_to_menu' | 'level_select' | 'play_again';
   timestamp: number;
   data?: any;
 }

@@ -1,5 +1,6 @@
-// src/services/openRouterAI.ts - OpenRouter AI Integration for Enemy Behavior
-import { Position } from '../types/game.types';
+// src/services/openRouterAI.ts - OpenRouter AI Integration for Enemy Behavior (Corrected)
+import { useState, useCallback } from 'react';
+import type { Position } from '../types/game.types';
 
 interface OpenRouterConfig {
   apiKey: string;
@@ -141,7 +142,6 @@ Consider:
    * Build detailed prompt with current game state
    */
   private buildGamePrompt(context: GameContext): string {
-    const recentHistory = this.gameHistory.slice(-5);
     const playerPatternAnalysis = this.analyzePlayerPatterns(context.playerHistory);
     
     return `CURRENT GAME STATE:
@@ -176,7 +176,6 @@ Please analyze this situation and provide optimal enemy moves that create challe
   private analyzePlayerPatterns(history: Position[]): string {
     if (history.length < 3) return "Insufficient data for pattern analysis";
     
-    const directions = ['up', 'down', 'left', 'right'];
     const directionCounts = new Map<string, number>();
     const sequences = new Map<string, number>();
     
@@ -409,7 +408,7 @@ export const useAIEnhancedEnemyAI = (
     if (gameState !== 'playing' || enemies.length === 0) return;
     
     // Update player history
-    setPlayerHistory(prev => [...prev.slice(-20), playerPos]); // Keep last 20 moves
+    setPlayerHistory((prev: Position[]) => [...prev.slice(-20), playerPos]); // Keep last 20 moves
     
     if (openRouterAI.isAvailable && playerHistory.length > 5) {
       try {
@@ -417,7 +416,7 @@ export const useAIEnhancedEnemyAI = (
           maze,
           playerPos,
           playerHistory,
-          enemies: enemies.map(e => ({
+          enemies: enemies.map((e: any) => ({
             id: e.id,
             pos: { x: e.x, y: e.y },
             personality: e.personality.type,
@@ -432,8 +431,8 @@ export const useAIEnhancedEnemyAI = (
         const aiResponse = await openRouterAI.getAIDecisions(gameContext);
         
         // Apply AI decisions to enemies
-        setEnemies(prevEnemies => 
-          prevEnemies.map(enemy => {
+        setEnemies((prevEnemies: any[]) => 
+          prevEnemies.map((enemy: any) => {
             const aiMove = aiResponse.enemyMoves.find(m => m.enemyId === enemy.id);
             if (aiMove) {
               return {

@@ -1,6 +1,6 @@
-// components/AIConfigPanel.tsx - AI Configuration Interface
+// components/AIConfigPanel.tsx - AI Configuration Interface (Corrected)
 import React, { useState } from 'react';
-import { Brain, Zap, Eye, Shield, Users, Settings, Info, AlertTriangle } from 'lucide-react';
+import { Brain, Eye, Settings, Info, AlertTriangle } from 'lucide-react';
 
 interface AIConfig {
   enabled: boolean;
@@ -207,7 +207,7 @@ const AIConfigPanel: React.FC<AIConfigPanelProps> = ({
                   Enemy Status ({enemyStats.length})
                 </h4>
                 <div className="space-y-2">
-                  {enemyStats.map((enemy, index) => (
+                  {enemyStats.map((enemy) => (
                     <div key={enemy.id} className="bg-gray-800 rounded p-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 // Updated MazeGame.tsx integration with AI Enemy System
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import type { Position, GameSettings } from '../types/game.types';
+import type { GameSettings } from '../types/game.types';
 
 import { LEVELS, DEFAULT_SETTINGS } from '../utilities/gameConstant';
 import { removeCollectible, cloneMaze } from '../utilities/mazeUtilities';
@@ -111,8 +111,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
     playerPos,
     gameState,
     settings.difficulty,
-    aiConfig.enabled,
-    aiConfig.apiKey
+   
   );
 
   // Basic Enemy AI System (fallback)
@@ -289,7 +288,7 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
   // Enhanced game loop for enemy movement and collision detection
   useEffect(() => {
     if (gameState === 'playing') {
-      const intervalTime = aiConfig.enabled ? 600 : activeEnemyAI.enemyMoveInterval || 800;
+      const intervalTime = aiConfig.enabled && aiConfig.apiKey ? 600 : basicEnemyAI.enemyMoveInterval || 800;
       
       gameLoopRef.current = setInterval(() => {
         activeEnemyAI.updateEnemies();
@@ -319,8 +318,8 @@ const MazeGame: React.FC<MazeGameProps> = ({ initialSettings }) => {
         clearInterval(gameLoopRef.current);
       }
     };
-  }, [gameState, activeEnemyAI, playerPos, setGameState, gameTimer, analytics, playSound, aiConfig.enabled]);
-
+  }, [gameState, activeEnemyAI, playerPos, setGameState, gameTimer, analytics, playSound, aiConfig.enabled, aiConfig.apiKey, basicEnemyAI.enemyMoveInterval]);
+  
   // Initialize first level when game starts
   useEffect(() => {
     if (gameState === 'playing' && currentMaze.length === 0) {

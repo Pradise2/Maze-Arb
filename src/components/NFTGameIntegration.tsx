@@ -1,4 +1,4 @@
-// components/NFTGameIntegration.tsx - Complete NFT integration for maze game
+// components/NFTGameIntegration.tsx - Complete NFT integration for maze game (Corrected)
 import React, { useState, useEffect, useCallback } from 'react';
 import { Palette, Zap, Trophy, Star, Crown, Gift } from 'lucide-react';
 import { useNFTEcosystem } from '../hooks/useNFTEcosystem';
@@ -24,7 +24,6 @@ export const NFTGameIntegration: React.FC<NFTGameIntegrationProps> = ({
   onLevelLoad
 }) => {
   const [activeTab, setActiveTab] = useState<'skins' | 'levels' | 'rewards'>('skins');
-  const [showMintModal, setShowMintModal] = useState(false);
   const [selectedSkin, setSelectedSkin] = useState<any>(null);
   const [pendingRewards, setPendingRewards] = useState<any[]>([]);
 

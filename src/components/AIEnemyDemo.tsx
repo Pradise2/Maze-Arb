@@ -1,4 +1,4 @@
-// components/AIEnemyDemo.tsx - Standalone AI Demo
+// components/AIEnemyDemo.tsx - Standalone AI Demo (Corrected)
 import React, { useState, useEffect } from 'react';
 import { Brain, Play, Pause, RotateCcw } from 'lucide-react';
 
@@ -83,5 +83,99 @@ const AIEnemyDemo: React.FC = () => {
     return bestMove;
   };
 
+  // --- Start of Corrected Section ---
+
   const updateEnemyAI = (enemy: DemoEnemy): DemoEnemy => {
-    const distanceToPlayer
+    const distanceToPlayer = getDistance(enemy.position, playerPos);
+    let newState = enemy.state;
+    let newPosition = enemy.position;
+
+    // State transition logic
+    if (distanceToPlayer < 5) {
+      newState = 'chasing';
+    } else {
+      newState = 'patrolling';
+    }
+
+    // Movement logic
+    if (newState === 'chasing') {
+      newPosition = findPath(enemy.position, playerPos);
+    } else {
+      // Simple random walk for patrol
+      const directions = [
+        { x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }
+      ].filter(dir => isValidMove(enemy.position.x + dir.x, enemy.position.y + dir.y));
+      
+      if (directions.length > 0) {
+        const randomDir = directions[Math.floor(Math.random() * directions.length)];
+        newPosition = { x: enemy.position.x + randomDir.x, y: enemy.position.y + randomDir.y };
+      }
+    }
+
+    return {
+      ...enemy,
+      state: newState,
+      position: newPosition,
+      energy: Math.max(0, enemy.energy - 0.5)
+    };
+  };
+
+  // Game loop for the demo
+  useEffect(() => {
+    if (isRunning) {
+      const interval = setInterval(() => {
+        setEnemies(prevEnemies => prevEnemies.map(updateEnemyAI));
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [isRunning]);
+
+  // Handle player movement (for demo purposes)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        let newPos = { ...playerPos };
+        if (e.key === 'ArrowUp') newPos.y -= 1;
+        if (e.key === 'ArrowDown') newPos.y += 1;
+        if (e.key === 'ArrowLeft') newPos.x -= 1;
+        if (e.key === 'ArrowRight') newPos.x += 1;
+        if (isValidMove(newPos.x, newPos.y)) {
+            setPlayerPos(newPos);
+        }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playerPos]);
+
+  // A simple renderer for the demo
+  return (
+    <div className="p-4 bg-gray-800 text-white rounded-lg">
+        <h3 className="text-lg font-bold mb-2 flex items-center gap-2"><Brain/> AI Demo</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${maze[0].length}, 20px)` }}>
+            {maze.map((row, y) => row.map((cell, x) => {
+                const isPlayer = playerPos.x === x && playerPos.y === y;
+                const enemy = enemies.find(e => e.position.x === x && e.position.y === y);
+                return (
+                    <div key={`${x}-${y}`} style={{
+                        width: 20, height: 20,
+                        backgroundColor: cell === 1 ? 'black' : 'gray',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                        {isPlayer ? '😊' : enemy ? '👾' : ''}
+                    </div>
+                );
+            }))}
+        </div>
+        <div className="mt-4 flex gap-2">
+            <button onClick={() => setIsRunning(!isRunning)} className="p-2 bg-blue-600 rounded">
+                {isRunning ? <Pause size={16}/> : <Play size={16}/>}
+            </button>
+            <button onClick={() => window.location.reload()} className="p-2 bg-red-600 rounded">
+                <RotateCcw size={16}/>
+            </button>
+        </div>
+    </div>
+  );
+  // --- End of Corrected Section ---
+};
+
+export default AIEnemyDemo;

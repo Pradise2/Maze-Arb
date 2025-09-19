@@ -1,5 +1,5 @@
 // MazeRenderer.tsx - Fixed Type Issues
-import React, { useMemo } from 'react';
+import React  from 'react';
 
 // ==================== INTERFACES ====================
 

@@ -1,6 +1,6 @@
-// hooks/useEnhancedEnemyAI.ts - Advanced AI Enemy Behavior
+// hooks/useEnhancedEnemyAI.ts - Advanced AI Enemy Behavior (Corrected)
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Position } from '../types/game.types';
+import type { Position } from '../types/game.types';
 
 interface EnemyPersonality {
   type: 'hunter' | 'guardian' | 'scout' | 'ambusher' | 'swarm';
@@ -31,34 +31,21 @@ interface PlayerPattern {
   decisionTime: number;
 }
 
-interface GameContext {
-  maze: number[][];
-  playerPos: Position;
-  playerHistory: Position[];
-  gameTime: number;
-  difficulty: 'easy' | 'normal' | 'hard';
-  levelLayout: 'linear' | 'branching' | 'circular' | 'complex';
-}
-
 export const useEnhancedEnemyAI = (
   maze: number[][],
   playerPos: Position,
   gameState: string,
-  difficulty: 'easy' | 'normal' | 'hard' = 'normal',
-  aiEnabled: boolean = false,
-  aiApiKey?: string
+  difficulty: 'easy' | 'normal' | 'hard' = 'normal'
 ) => {
   const [enemies, setEnemies] = useState<SmartEnemy[]>([]);
-  const [playerHistory, setPlayerHistory] = useState<Position[]>([]);
+  const [_playerHistory, setPlayerHistory] = useState<Position[]>([]);
   const [playerPattern, setPlayerPattern] = useState<PlayerPattern | null>(null);
-  const [gameContext, setGameContext] = useState<GameContext | null>(null);
   
-  const patternAnalysisRef = useRef<Map<string, number>>(new Map());
   const lastAnalysisRef = useRef<number>(0);
   const cooperationGroupsRef = useRef<Map<string, SmartEnemy[]>>(new Map());
 
   // Initialize enemy personalities based on difficulty
-  const createEnemyPersonality = useCallback((index: number, total: number): EnemyPersonality => {
+  const createEnemyPersonality = useCallback((index: number): EnemyPersonality => {
     const personalityTypes: EnemyPersonality['type'][] = ['hunter', 'guardian', 'scout', 'ambusher', 'swarm'];
     
     const difficultyModifiers = {
@@ -160,6 +147,18 @@ export const useEnhancedEnemyAI = (
     };
   }, []);
 
+  // Check if position is valid for movement
+  const isValidMove = useCallback((x: number, y: number): boolean => {
+    if (!maze || maze.length === 0) return false;
+    return (
+      y >= 0 && 
+      y < maze.length && 
+      x >= 0 && 
+      x < maze[0].length &&
+      maze[y][x] !== 1 // Not a wall
+    );
+  }, [maze]);
+  
   // Predict player next move based on patterns
   const predictPlayerMove = useCallback((currentPos: Position, pattern: PlayerPattern): Position[] => {
     const possibleMoves: Array<{pos: Position, probability: number}> = [];
@@ -187,20 +186,28 @@ export const useEnhancedEnemyAI = (
       .sort((a, b) => b.probability - a.probability)
       .slice(0, 2)
       .map(move => move.pos);
-  }, []);
+  }, [isValidMove]);
 
-  // Check if position is valid for movement
-  const isValidMove = useCallback((x: number, y: number): boolean => {
-    if (!maze || maze.length === 0) return false;
-    return (
-      y >= 0 && 
-      y < maze.length && 
-      x >= 0 && 
-      x < maze[0].length &&
-      maze[y][x] !== 1 // Not a wall
-    );
-  }, [maze]);
-
+  // Calculate visibility/coverage score for scouts
+  const getVisibilityScore = useCallback((pos: Position): number => {
+    let score = 0;
+    const maxDistance = 5;
+    
+    for (let dx = -maxDistance; dx <= maxDistance; dx++) {
+      for (let dy = -maxDistance; dy <= maxDistance; dy++) {
+        const checkX = pos.x + dx;
+        const checkY = pos.y + dy;
+        
+        if (isValidMove(checkX, checkY)) {
+          const distance = Math.abs(dx) + Math.abs(dy);
+          score += Math.max(0, maxDistance - distance);
+        }
+      }
+    }
+    
+    return score;
+  }, [isValidMove]);
+  
   // Calculate strategic position value for enemies
   const calculatePositionValue = useCallback((pos: Position, enemy: SmartEnemy): number => {
     let value = 0;
@@ -244,27 +251,7 @@ export const useEnhancedEnemyAI = (
     }
 
     return value;
-  }, [playerPos, playerPattern, predictPlayerMove]);
-
-  // Calculate visibility/coverage score for scouts
-  const getVisibilityScore = useCallback((pos: Position): number => {
-    let score = 0;
-    const maxDistance = 5;
-    
-    for (let dx = -maxDistance; dx <= maxDistance; dx++) {
-      for (let dy = -maxDistance; dy <= maxDistance; dy++) {
-        const checkX = pos.x + dx;
-        const checkY = pos.y + dy;
-        
-        if (isValidMove(checkX, checkY)) {
-          const distance = Math.abs(dx) + Math.abs(dy);
-          score += Math.max(0, maxDistance - distance);
-        }
-      }
-    }
-    
-    return score;
-  }, [isValidMove]);
+  }, [playerPos, playerPattern, predictPlayerMove, getVisibilityScore]);
 
   // Smart pathfinding that considers enemy personality
   const findSmartPath = useCallback((enemy: SmartEnemy, target: Position): Position | null => {
@@ -425,7 +412,7 @@ export const useEnhancedEnemyAI = (
     const newEnemies: SmartEnemy[] = positions.map((pos, index) => ({
       id: `enemy-${index}`,
       position: pos,
-      personality: createEnemyPersonality(index, positions.length),
+      personality: createEnemyPersonality(index),
       state: 'patrolling',
       energy: 100,
       lastPlayerSight: null,
